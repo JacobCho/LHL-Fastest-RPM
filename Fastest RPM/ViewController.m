@@ -9,9 +9,9 @@
 #import "ViewController.h"
 
 @interface ViewController () {
-    CGPoint startLocation;
-    double startTime;
-    double endTime;
+
+    CGPoint startVelocity;
+    CGPoint endVelocity;
 }
 
 @end
@@ -24,7 +24,7 @@
     self.needle.layer.anchorPoint = CGPointMake(self.needle.layer.anchorPoint.x-0.4, self.needle.layer.anchorPoint.y);
     
     
-    [self moveNeedle:-11];
+    [self moveNeedle:-220];
     
     
     UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGesture:)];
@@ -38,20 +38,22 @@
 
 -(void)panGesture:(UIPanGestureRecognizer *)sender {
     if (sender.state == UIGestureRecognizerStateBegan) {
-        startLocation = [sender locationInView:self.view];
-        startTime = [[NSDate date] timeIntervalSince1970] * 100;
+
+        startVelocity = [sender velocityInView:self.view];
+    }
+    else if (sender.state == UIGestureRecognizerStateChanged) {
+        endVelocity = [sender velocityInView:self.view];
+        CGFloat vx = endVelocity.x - startVelocity.x;
+        CGFloat vy = endVelocity.y - startVelocity.y;
+        CGFloat velocity = sqrt(vx*vx + vy*vy);
+        
+        [self moveNeedle:velocity];
+        NSLog(@"%f",velocity);
+
     }
     else if (sender.state == UIGestureRecognizerStateEnded) {
-        CGPoint stopLocation = [sender locationInView:self.view];
-        CGFloat dx = stopLocation.x - startLocation.x;
-        CGFloat dy = stopLocation.y - startLocation.y;
-        CGFloat distance = sqrt(dx*dx + dy*dy );
-        endTime = [[NSDate date] timeIntervalSince1970] * 100;
-        double time = endTime - startTime;
-        float velocity = distance / (float)time;
-        [self moveNeedle:velocity];
-        NSLog(@"%f", velocity);
-
+        
+        [self moveNeedle:-220];
     }
 
 }
@@ -60,17 +62,16 @@
 
 -(void) moveNeedle:(float)angl
 {
-    
-    [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationDuration:3.0f];
-    
-    if (angl >= 20.5) angl = 20.5;
-    if (angl < -11) angl = -11;
-        
 
-    [self.needle setTransform: CGAffineTransformMakeRotation((M_PI / 9) *angl)];
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:1.0f];
+    
+    if (angl >= 405) angl = 405;
+
+    [self.needle setTransform: CGAffineTransformMakeRotation((M_PI / 180) * angl)];
     
     [UIView commitAnimations];
+   
 }
 
 
